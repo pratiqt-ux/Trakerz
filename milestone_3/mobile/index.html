@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Trakerz - Mobile Expense Tracker</title>
+  <meta name="description" content="Personal mobile expense tracker with cloud and local storage support.">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top App Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">₹</div>
+        <div class="brand-text">
+          <h1>Trakerz</h1>
+          <span>Expense Manager</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Status Pill: Local or Cloud -->
+        <button id="statusPill" class="status-pill" title="Click for Network & Storage Info">
+          <span id="statusDot" class="status-dot"></span>
+          <span id="statusText">Connecting...</span>
+        </button>
+        <button id="infoBtn" class="icon-btn" title="Phone Connection Guide" aria-label="Phone Connection Guide">📱</button>
+        <button id="refreshBtn" class="icon-btn" title="Refresh Data" aria-label="Refresh Data">🔄</button>
+      </div>
+    </header>
+
+    <!-- Overview Hero Card -->
+    <section class="hero-card">
+      <div class="hero-label">Total Recorded Expenses</div>
+      <div class="hero-amount">
+        <span class="currency-sym">₹</span>
+        <span id="totalAmountText">0.00</span>
+      </div>
+      <div class="hero-stats-row">
+        <div class="stat-item">
+          <span class="stat-title">This Month</span>
+          <span id="monthAmountText" class="stat-val">₹0.00</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-title">Total Records</span>
+          <span id="totalCountText" class="stat-val">0 entries</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Action Button Row -->
+    <div class="quick-action-row">
+      <button id="openAddModalBtn" class="primary-btn">
+        <span>+</span> Add New Expense
+      </button>
+    </div>
+
+    <!-- Category Analytics Breakdown -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Spending by Category</h2>
+        <span class="section-badge">Breakdown</span>
+      </div>
+      <div id="categoryList" class="category-list">
+        <!-- Dynamically populated category cards -->
+      </div>
+    </section>
+
+    <!-- Expense History Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">Expense History</h2>
+        <span class="section-badge">Recent First</span>
+      </div>
+
+      <!-- Search Input -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by category, note, or amount..." autocomplete="off">
+      </div>
+
+      <!-- Category Filter Bar -->
+      <div id="filterBar" class="filter-bar">
+        <!-- Dynamically rendered filter chips -->
+      </div>
+
+      <!-- Expense List -->
+      <div id="expenseList" class="expense-list">
+        <!-- Dynamically rendered expense rows -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">💸</div>
+        <h3>No Expenses Found</h3>
+        <p>No expenses match your search or no expenses have been recorded yet.</p>
+        <button class="secondary-btn" style="margin: 0 auto;" onclick="document.getElementById('openAddModalBtn').click()">
+          + Add First Expense
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Mobile Floating Action Bar (Sticky Bottom) -->
+  <div class="bottom-bar">
+    <div class="bottom-bar-inner">
+      <button id="fabBtn" class="fab-btn">
+        <span>+</span> Record Expense
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- ADD EXPENSE MODAL (Mobile Bottom Sheet) -->
+  <!-- ========================================================= -->
+  <div id="addModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 id="addModalTitle" class="modal-title">Record Expense</h3>
+        <button id="closeAddModalBtn" class="modal-close-btn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <form id="expenseForm">
+        <!-- Amount Input -->
+        <div class="form-group">
+          <label class="form-label" for="inputAmount">Amount (INR)</label>
+          <div class="amount-input-wrap">
+            <span class="amount-prefix">₹</span>
+            <input type="number" id="inputAmount" class="form-input amount-input" placeholder="0.00" step="0.01" min="0.01" inputmode="decimal" required>
+          </div>
+        </div>
+
+        <!-- Category Input & Quick Chips -->
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div class="quick-categories">
+            <button type="button" class="cat-chip" data-cat="Food">🍔 Food</button>
+            <button type="button" class="cat-chip" data-cat="Travel">🚕 Travel</button>
+            <button type="button" class="cat-chip" data-cat="Shopping">🛒 Shopping</button>
+            <button type="button" class="cat-chip" data-cat="Bills">💡 Bills</button>
+            <button type="button" class="cat-chip" data-cat="Entertainment">🍿 Movies</button>
+            <button type="button" class="cat-chip" data-cat="Health">💊 Health</button>
+            <button type="button" class="cat-chip" data-cat="Groceries">🥦 Groceries</button>
+            <button type="button" class="cat-chip" data-cat="Education">📚 College</button>
+            <button type="button" class="cat-chip" data-cat="Other">🏷️ Other</button>
+          </div>
+          <input type="text" id="inputCategory" class="form-input" placeholder="Or type custom category name..." required maxlength="50">
+        </div>
+
+        <!-- Date Input -->
+        <div class="form-group">
+          <label class="form-label" for="inputDate">Date</label>
+          <input type="date" id="inputDate" class="form-input" required>
+        </div>
+
+        <!-- Description Input -->
+        <div class="form-group">
+          <label class="form-label" for="inputDesc">Description (Optional)</label>
+          <input type="text" id="inputDesc" class="form-input" placeholder="e.g. Lunch with friends, metro recharge" maxlength="255">
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="modal-actions">
+          <button type="button" id="cancelAddBtn" class="cancel-btn">Cancel</button>
+          <button type="submit" id="submitExpenseBtn" class="submit-btn">Save Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- DELETE CONFIRMATION MODAL -->
+  <!-- ========================================================= -->
+  <div id="deleteModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--danger);">Confirm Delete</h3>
+        <button id="closeDeleteModalBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 12px;">
+        Are you sure you want to permanently delete this expense?
+      </p>
+      <div id="deleteExpenseSummary" style="background: var(--bg-primary); padding: 12px; border-radius: var(--radius-sm); font-weight: 700; margin-bottom: 20px;">
+        <!-- Filled dynamically -->
+      </div>
+      <div class="modal-actions">
+        <button id="cancelDeleteBtn" class="cancel-btn">Cancel</button>
+        <button id="confirmDeleteBtn" class="submit-btn" style="background: var(--danger);">Delete Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- PHONE & NETWORK INFO MODAL -->
+  <!-- ========================================================= -->
+  <div id="networkModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">📱 Access From Your Phone</h3>
+        <button id="closeNetworkModalBtn" class="modal-close-btn">&times;</button>
+      </div>
+      
+      <div class="network-card">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text-muted);">CURRENT ACCESS URL</div>
+        <div id="currentUrlDisplay" class="network-url-box">http://localhost:8000</div>
+        <p style="font-size: 12px; color: var(--text-muted);">
+          To open Trakerz on your Android phone:
+        </p>
+        <ol class="step-list" style="margin-top: 8px;">
+          <li>Connect your smartphone to the <strong>same Wi-Fi network</strong> as your laptop.</li>
+          <li>Find your laptop's Local IP address (e.g. <code>192.168.1.X</code>).</li>
+          <li>On Chrome on your phone, navigate to: <code>http://&lt;your-laptop-ip&gt;:8000</code></li>
+          <li>Tap Chrome's <strong>Menu (⋮) &rarr; "Add to Home screen"</strong> to install Trakerz like a native mobile app!</li>
+        </ol>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <button id="closeNetworkBtn" class="cancel-btn" style="width: 100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
