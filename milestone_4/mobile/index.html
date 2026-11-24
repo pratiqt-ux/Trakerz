@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Trakerz Pro — Modern Finance & Insights</title>
+  <meta name="description" content="Milestone 4: Modern Fintech Dashboard, Category Budgets, Smart Insights & Savings Goals.">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <!-- Chart.js Vendor Script (Bundled locally in Milestone 4) -->
+  <script src="/static/js/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ========================================================= -->
+  <!-- DESKTOP SIDEBAR -->
+  <!-- ========================================================= -->
+  <aside class="app-sidebar">
+    <div class="sidebar-header">
+      <div class="brand-badge">₹</div>
+      <div class="brand-meta">
+        <h1>Trakerz</h1>
+        <span>Fintech Suite M4</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-link active" data-view="dashboard">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </span>
+        <span>Dashboard</span>
+      </button>
+
+      <button class="nav-link" data-view="transactions">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </span>
+        <span>Transactions</span>
+      </button>
+
+      <button class="nav-link" data-view="budgets">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+        </span>
+        <span>Monthly Budgets</span>
+      </button>
+
+      <button class="nav-link" data-view="analytics">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </span>
+        <span>Smart Analytics</span>
+      </button>
+
+      <button class="nav-link" data-view="savings">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+        </span>
+        <span>Savings Goals</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button id="sidebarStatusPill" class="status-pill" title="Click for Storage & Network Info">
+        <span id="sidebarStatusDot" class="status-dot"></span>
+        <span id="sidebarStatusText">Connecting...</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========================================================= -->
+  <!-- MAIN APP CONTAINER -->
+  <!-- ========================================================= -->
+  <main class="app-main">
+    <!-- Top Sticky Bar -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <h2 id="topPageTitle" class="page-title">Dashboard</h2>
+        <!-- Global Month Selector -->
+        <div class="month-selector-wrap" title="Filter overview by month">
+          <label for="globalMonthPicker">Month</label>
+          <input type="month" id="globalMonthPicker" class="month-input">
+        </div>
+      </div>
+
+      <div class="top-bar-actions">
+        <button id="openAddExpenseBtn" class="btn-primary">
+          <span>+</span> Add Expense
+        </button>
+        <button id="refreshDataBtn" class="btn-icon" title="Refresh Live Data" aria-label="Refresh Data">
+          🔄
+        </button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <!-- Active Alerts Banner Container -->
+      <div id="alertsBannerContainer" class="alerts-banner-container"></div>
+
+      <!-- ======================================================= -->
+      <!-- VIEW 1: DASHBOARD -->
+      <!-- ======================================================= -->
+      <section id="view-dashboard" class="view-section active">
+        <!-- 4 KPI Summary Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Spent This Month</span>
+              <span id="kpiMonthBadge" class="kpi-badge info">Current</span>
+            </div>
+            <div class="kpi-value">
+              <span style="color: var(--primary);">₹</span>
+              <span id="kpiThisMonthAmount">0.00</span>
+            </div>
+            <span id="kpiThisMonthSub" class="kpi-subtext">0 transactions</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Spent Today</span>
+              <span class="kpi-badge success">Today</span>
+            </div>
+            <div class="kpi-value">
+              <span style="color: var(--success);">₹</span>
+              <span id="kpiTodayAmount">0.00</span>
+            </div>
+            <span id="kpiTodaySub" class="kpi-subtext">Today's transactions</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Remaining Budget</span>
+              <span id="kpiBudgetBadge" class="kpi-badge info">Active</span>
+            </div>
+            <div class="kpi-value">
+              <span style="color: var(--warning);">₹</span>
+              <span id="kpiRemainingBudget">0.00</span>
+            </div>
+            <span id="kpiBudgetSub" class="kpi-subtext">0% of budget used</span>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">Total Records</span>
+              <span class="kpi-badge info">All-time</span>
+            </div>
+            <div class="kpi-value">
+              <span id="kpiTotalRecords">0</span>
+            </div>
+            <span class="kpi-subtext">Recorded expenses</span>
+          </div>
+        </div>
+
+        <!-- Two-Column Overview Panels -->
+        <div class="dashboard-columns">
+          <!-- Column 1: Monthly Budgets Preview -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Monthly Budgets</h3>
+              <a class="panel-link" data-switch-view="budgets">+ Manage Budgets</a>
+            </div>
+            <div id="dashBudgetsList" class="budget-list-compact">
+              <!-- Dynamically populated budget progress rows -->
+            </div>
+          </div>
+
+          <!-- Column 2: Smart Financial Insights -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Smart Financial Insights</h3>
+              <a class="panel-link" data-switch-view="analytics">View Full Analytics</a>
+            </div>
+            <div id="dashInsightsList" class="insights-container">
+              <!-- Dynamically populated insights cards -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">Recent Transactions</h3>
+            <a class="panel-link" data-switch-view="transactions">View All</a>
+          </div>
+          <div class="table-container">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="dashRecentTxBody">
+                <!-- Dynamically populated recent transactions -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- VIEW 2: TRANSACTIONS -->
+      <!-- ======================================================= -->
+      <section id="view-transactions" class="view-section">
+        <div class="panel-card" style="margin-bottom: 20px;">
+          <!-- Filter Controls -->
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; flex: 1;">
+              <input type="text" id="txSearchInput" class="form-control" style="max-width: 320px;" placeholder="Search category, note, or amount...">
+              <select id="txCategoryFilter" class="form-control" style="max-width: 200px;">
+                <option value="ALL">All Categories</option>
+              </select>
+            </div>
+            <button id="openAddExpenseBtn2" class="btn-primary">
+              <span>+</span> Add Expense
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="table-container">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="fullTxTableBody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+          <div id="txEmptyState" class="empty-box" style="display: none; margin-top: 16px;">
+            <div class="empty-icon">💳</div>
+            <h3>No Transactions Found</h3>
+            <p>No expenses match your search filter.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- VIEW 3: MONTHLY BUDGETS -->
+      <!-- ======================================================= -->
+      <section id="view-budgets" class="view-section">
+        <div class="panel-card" style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <h3 class="panel-title" style="margin-bottom: 4px;">Category Spending Limits</h3>
+              <p style="color: var(--text-secondary); font-size: 13px;">
+                Track category budgets with automatic alerts at <strong>80%</strong> (Warning) and <strong>100%</strong> (Exceeded).
+              </p>
+            </div>
+            <button id="openAddBudgetBtn" class="btn-primary">
+              <span>+</span> Set Category Budget
+            </button>
+          </div>
+        </div>
+
+        <div id="budgetsGrid" class="budgets-grid">
+          <!-- Dynamically populated budget cards -->
+        </div>
+
+        <div id="budgetsEmptyState" class="empty-box" style="display: none; margin-top: 20px;">
+          <div class="empty-icon">🎯</div>
+          <h3>No Budgets Set For This Month</h3>
+          <p>Create category budgets to keep your expenses under control.</p>
+          <button class="btn-primary" style="margin: 12px auto 0;" onclick="document.getElementById('openAddBudgetBtn').click()">
+            + Set Your First Budget
+          </button>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- VIEW 4: ANALYTICS & CHARTS -->
+      <!-- ======================================================= -->
+      <section id="view-analytics" class="view-section">
+        <div class="charts-grid">
+          <!-- Chart A: Category Spending (Doughnut) -->
+          <div class="chart-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Spending by Category</h3>
+              <span class="kpi-badge info">Breakdown</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="categoryChartCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart B: Monthly Trend (Line) -->
+          <div class="chart-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Monthly Spending Trend</h3>
+              <span class="kpi-badge info">History</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="monthlyTrendChartCanvas"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart C: Daily Spending (Bar) -->
+          <div class="chart-card full-width">
+            <div class="panel-header">
+              <h3 class="panel-title">Daily Spending in Month</h3>
+              <span class="kpi-badge info">Day by Day</span>
+            </div>
+            <div class="chart-wrapper" style="height: 300px;">
+              <canvas id="dailyChartCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Month-over-Month Financial Insights -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h3 class="panel-title">Comprehensive Month-over-Month Insights</h3>
+            <span class="kpi-badge success">Smart Analytics</span>
+          </div>
+          <div id="analyticsInsightsGrid" class="insights-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================= -->
+      <!-- VIEW 5: SAVINGS GOALS -->
+      <!-- ======================================================= -->
+      <section id="view-savings" class="view-section">
+        <div class="panel-card" style="margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <h3 class="panel-title" style="margin-bottom: 4px;">Savings Goals & Contributions</h3>
+              <p style="color: var(--text-secondary); font-size: 13px;">
+                Plan target purchases and log deposits until you achieve your financial targets.
+              </p>
+            </div>
+            <button id="openAddGoalBtn" class="btn-primary">
+              <span>+</span> New Savings Goal
+            </button>
+          </div>
+        </div>
+
+        <div id="savingsGrid" class="savings-grid">
+          <!-- Dynamically populated savings goals -->
+        </div>
+
+        <div id="savingsEmptyState" class="empty-box" style="display: none; margin-top: 20px;">
+          <div class="empty-icon">💰</div>
+          <h3>No Savings Goals Yet</h3>
+          <p>Create a savings goal for a laptop, trip, or emergency fund.</p>
+          <button class="btn-primary" style="margin: 12px auto 0;" onclick="document.getElementById('openAddGoalBtn').click()">
+            + Create Goal
+          </button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <!-- ========================================================= -->
+  <nav class="mobile-nav-bar">
+    <button class="mobile-nav-item active" data-view="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="mobile-nav-item" data-view="transactions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <span>Expenses</span>
+    </button>
+    <button class="mobile-nav-item" data-view="budgets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+      <span>Budgets</span>
+    </button>
+    <button class="mobile-nav-item" data-view="analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Analytics</span>
+    </button>
+    <button class="mobile-nav-item" data-view="savings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>
+      <span>Savings</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: ADD EXPENSE -->
+  <!-- ========================================================= -->
+  <div id="addExpenseModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Record Expense</h3>
+        <button class="modal-close" data-close-modal="addExpenseModal">&times;</button>
+      </div>
+      <form id="addExpenseForm">
+        <div class="form-group">
+          <label class="form-label" for="expAmountInput">Amount (INR)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <span style="position: absolute; left: 14px; font-size: 20px; font-weight: 800; color: var(--success);">₹</span>
+            <input type="number" id="expAmountInput" class="form-control" style="padding-left: 36px; font-size: 20px; font-weight: 800;" placeholder="0.00" step="0.01" min="0.01" required inputmode="decimal">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div class="quick-chips-row">
+            <button type="button" class="chip-btn" data-cat="Food">🍔 Food</button>
+            <button type="button" class="chip-btn" data-cat="Travel">🚕 Travel</button>
+            <button type="button" class="chip-btn" data-cat="Shopping">🛒 Shopping</button>
+            <button type="button" class="chip-btn" data-cat="Bills">💡 Bills</button>
+            <button type="button" class="chip-btn" data-cat="Entertainment">🍿 Movies</button>
+            <button type="button" class="chip-btn" data-cat="Groceries">🥦 Groceries</button>
+            <button type="button" class="chip-btn" data-cat="Health">💊 Health</button>
+            <button type="button" class="chip-btn" data-cat="Other">🏷️ Other</button>
+          </div>
+          <input type="text" id="expCategoryInput" class="form-control" placeholder="Or type custom category name..." required maxlength="50">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="expDateInput">Date</label>
+          <input type="date" id="expDateInput" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="expDescInput">Description (Optional)</label>
+          <input type="text" id="expDescInput" class="form-control" placeholder="e.g. Lunch with team, monthly metro card" maxlength="255">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="addExpenseModal">Cancel</button>
+          <button type="submit" id="submitExpenseBtn" class="btn-primary">Save Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: SET BUDGET -->
+  <!-- ========================================================= -->
+  <div id="setBudgetModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Set Monthly Category Budget</h3>
+        <button class="modal-close" data-close-modal="setBudgetModal">&times;</button>
+      </div>
+      <form id="setBudgetForm">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <div class="quick-chips-row">
+            <button type="button" class="chip-btn budget-chip" data-cat="Food">Food</button>
+            <button type="button" class="chip-btn budget-chip" data-cat="Travel">Travel</button>
+            <button type="button" class="chip-btn budget-chip" data-cat="Shopping">Shopping</button>
+            <button type="button" class="chip-btn budget-chip" data-cat="Bills">Bills</button>
+            <button type="button" class="chip-btn budget-chip" data-cat="Entertainment">Entertainment</button>
+            <button type="button" class="chip-btn budget-chip" data-cat="Groceries">Groceries</button>
+          </div>
+          <input type="text" id="budgetCategoryInput" class="form-control" placeholder="Category name..." required maxlength="50">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="budgetMonthInput">Budget Month</label>
+          <input type="month" id="budgetMonthInput" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="budgetAmountInput">Monthly Spending Limit (INR)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <span style="position: absolute; left: 14px; font-size: 20px; font-weight: 800; color: var(--warning);">₹</span>
+            <input type="number" id="budgetAmountInput" class="form-control" style="padding-left: 36px; font-size: 20px; font-weight: 800;" placeholder="5000" step="1" min="1" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="setBudgetModal">Cancel</button>
+          <button type="submit" id="submitBudgetBtn" class="btn-primary">Set Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: CREATE SAVINGS GOAL -->
+  <!-- ========================================================= -->
+  <div id="savingsGoalModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">New Savings Goal</h3>
+        <button class="modal-close" data-close-modal="savingsGoalModal">&times;</button>
+      </div>
+      <form id="savingsGoalForm">
+        <div class="form-group">
+          <label class="form-label" for="goalTitleInput">Goal Title</label>
+          <input type="text" id="goalTitleInput" class="form-control" placeholder="e.g. New Laptop, Emergency Fund" required maxlength="100">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goalTargetInput">Target Savings Amount (INR)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <span style="position: absolute; left: 14px; font-size: 20px; font-weight: 800; color: var(--success);">₹</span>
+            <input type="number" id="goalTargetInput" class="form-control" style="padding-left: 36px; font-size: 20px; font-weight: 800;" placeholder="60000" step="1" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goalCategoryInput">Category / Tag</label>
+          <input type="text" id="goalCategoryInput" class="form-control" placeholder="e.g. Tech, Travel, Education" value="General">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="goalDeadlineInput">Target Deadline (Optional)</label>
+          <input type="date" id="goalDeadlineInput" class="form-control">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="savingsGoalModal">Cancel</button>
+          <button type="submit" id="submitGoalBtn" class="btn-primary">Create Goal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: ADD CONTRIBUTION TO SAVINGS GOAL -->
+  <!-- ========================================================= -->
+  <div id="contributeModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="contributeModalTitle" class="modal-title">Deposit to Savings Goal</h3>
+        <button class="modal-close" data-close-modal="contributeModal">&times;</button>
+      </div>
+      <form id="contributeForm">
+        <input type="hidden" id="contributeGoalId">
+        <div class="form-group">
+          <label class="form-label" for="contributeAmountInput">Contribution Amount (INR)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <span style="position: absolute; left: 14px; font-size: 20px; font-weight: 800; color: var(--success);">₹</span>
+            <input type="number" id="contributeAmountInput" class="form-control" style="padding-left: 36px; font-size: 20px; font-weight: 800;" placeholder="1500" step="1" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contributeDateInput">Date</label>
+          <input type="date" id="contributeDateInput" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contributeNoteInput">Note (Optional)</label>
+          <input type="text" id="contributeNoteInput" class="form-control" placeholder="e.g. Weekly savings transfer, freelance bonus">
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" data-close-modal="contributeModal">Cancel</button>
+          <button type="submit" id="submitContributeBtn" class="btn-primary">Add Contribution</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: DELETE CONFIRMATION -->
+  <!-- ========================================================= -->
+  <div id="deleteModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color: var(--danger);">Confirm Delete</h3>
+        <button class="modal-close" data-close-modal="deleteModal">&times;</button>
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">
+        Are you sure you want to delete this record? This action cannot be undone.
+      </p>
+      <div id="deleteItemSummary" style="background: var(--bg-surface); padding: 12px; border-radius: var(--radius-md); font-weight: 700; margin-bottom: 24px;"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close-modal="deleteModal">Cancel</button>
+        <button id="confirmDeleteActionBtn" class="btn-primary" style="background: var(--danger);">Delete Record</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- MODAL: NETWORK & PHONE ACCESS INFO -->
+  <!-- ========================================================= -->
+  <div id="networkModal" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">📱 Access From Your Phone</h3>
+        <button class="modal-close" data-close-modal="networkModal">&times;</button>
+      </div>
+      <div style="background: var(--bg-surface); padding: 16px; border-radius: var(--radius-md); margin-bottom: 16px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">CURRENT SERVER URL</div>
+        <div id="currentServerUrl" style="background: var(--bg-card); border: 1px solid var(--primary); padding: 10px; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 15px; color: #a5b4fc; margin: 10px 0; text-align: center; font-weight: bold;">
+          http://localhost:8000
+        </div>
+        <ol style="padding-left: 20px; font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+          <li>Connect your smartphone to the <strong>same Wi-Fi network</strong> as your laptop.</li>
+          <li>Find your laptop's Local IP address using <code>ipconfig</code> (e.g. <code>192.168.1.X</code>).</li>
+          <li>On Chrome on your phone, navigate to: <code>http://&lt;your-laptop-ip&gt;:8000</code></li>
+          <li>Tap Chrome's <strong>Menu (⋮) &rarr; "Add to Home screen"</strong> to install Trakerz like a native app!</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" data-close-modal="networkModal" style="width: 100%;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Main Application Script -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
